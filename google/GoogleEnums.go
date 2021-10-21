@@ -3,6 +3,7 @@ package google
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -73,12 +74,16 @@ const (
 
 type ConvertibleBooleanType bool
 
-func (bit *ConvertibleBooleanType) UnmarshalCSV(data []byte) error {
+func (b *ConvertibleBooleanType) MarshalCSV() (string, error) {
+	return strconv.FormatBool(bool(*b)), nil
+}
+
+func (b *ConvertibleBooleanType) UnmarshalCSV(data []byte) error {
 	asString := string(data)
 	if asString == "1" || asString == "true" {
-		*bit = true
+		*b = true
 	} else if asString == "0" || asString == "false" {
-		*bit = false
+		*b = false
 	} else {
 		return errors.New(fmt.Sprintf("Boolean unmarshal error: invalid input %s", asString))
 	}
@@ -101,3 +106,16 @@ const (
 	Preorder   AvailabilityType = "preorder"
 	Backorder  AvailabilityType = "backorder"
 )
+
+func (at *AvailabilityType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	var newAt = AvailabilityType(csv)
+	*at = newAt
+	return nil
+}
+
+func (at *AvailabilityType) MarshalCSV() (string, error) {
+	return string(*at), nil
+}
