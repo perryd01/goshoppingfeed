@@ -15,20 +15,20 @@ type ShoppingFeed struct {
 
 // ShoppingElement  https://support.google.com/merchants/answer/7052112?hl=en
 type ShoppingElement struct {
-	ID                              *string                    `csv:"id,omitempty" json:"id" xml:"id" validate:"required,min=1,max=50"`           // Your product’s unique identifier
-	Title                           *string                    `csv:"title,omitempty" json:"title" xml:"title" validate:"required,min=1,max=150"` // Your product’s name
-	Description                     *string                    `csv:"description,omitempty" validate:"required,min=1,max=5000"`                   // Your product’s description
-	Link                            *GUrl                      `csv:"link,omitempty" validate:"required,min=1,max=2000"`                          // Your product’s landing page
-	ImageLink                       *GUrl                      `csv:"image_link,omitempty" validate:"required,min=1,max=2000"`                    // The URL of your product’s main image
-	AdditionalImageLink             *MultipleGUrl              `csv:"additional_image_link,omitempty"`                                            // The URL of an additional image for your product
-	MobileLink                      *GUrl                      `csv:"mobile_link,omitempty" validate:"min=1,max=2000"`
-	Availability                    *AvailabilityType          `csv:"availability,omitempty" validate:"required"`
-	CostOfGoodsSold                 *NumericValue              `csv:"cost_of_goods_sold,omitempty"`
-	AvailabilityDate                *GDate                     `csv:"availability_date,omitempty"`
-	ExpirationDate                  *GDate                     `csv:"expiration_date,omitempty"`
-	Price                           *NumericValue              `csv:"price,omitempty" validate:"required"`
-	SalePrice                       *NumericValue              `csv:"sale_price,omitempty"`
-	SalePriceEffectiveDate          *GDate                     `csv:"sale_price_effecitve_date,omitempty"`
+	ID                              *string                    `csv:"id,omitempty" json:"id" xml:"g:id" validate:"required,min=1,max=50"`                   // Your product’s unique identifier
+	Title                           *string                    `csv:"title,omitempty" json:"title" xml:"g:title" validate:"required,min=1,max=150"`         // Your product’s name
+	Description                     *string                    `csv:"description,omitempty" xml:"g:description" validate:"required,min=1,max=5000"`         // Your product’s description
+	Link                            *GUrl                      `csv:"link,omitempty" xml:"link,omitempty" validate:"required,min=1,max=2000"`               // Your product’s landing page
+	ImageLink                       *GUrl                      `csv:"image_link,omitempty" xml:"g:image_link,omitempty" validate:"required,min=1,max=2000"` // The URL of your product’s main image
+	AdditionalImageLink             *MultipleGUrl              `csv:"additional_image_link,omitempty"`                                                      // The URL of an additional image for your product
+	MobileLink                      *GUrl                      `csv:"mobile_link,omitempty" xml:"g:mobile_link,omitempty" validate:"min=1,max=2000"`
+	Availability                    *AvailabilityType          `csv:"availability,omitempty" xml:"g:availability,omitempty" validate:"required"`
+	AvailabilityDate                *GDate                     `csv:"availability_date,omitempty" xml:"g:availability_date,omitempty"`
+	CostOfGoodsSold                 *NumericValue              `csv:"cost_of_goods_sold,omitempty" xml:"g:cost_of_goods_sold,omitempty"`
+	ExpirationDate                  *GDate                     `csv:"expiration_date,omitempty" xml:"g:expiration_date,omitempty"`
+	Price                           *NumericValue              `csv:"price,omitempty" xml:"g:price,omitempty" validate:"required"`
+	SalePrice                       *NumericValue              `csv:"sale_price,omitempty" xml:"g:sale_price,omitempty"`
+	SalePriceEffectiveDate          *GDate                     `csv:"sale_price_effective_date,omitempty" xml:"g:sale_price_effective_date,omitempty"`
 	UnitPricingMeasure              *NumericValue              `csv:"unit_pricing_measure,omitempty"`
 	UnitPricingBaseMeasure          *NumericValue              `csv:"unit_pricing_base_measure,omitempty"`
 	Installment                     *InstallmentType           `csv:"installment,omitempty"`
@@ -36,10 +36,10 @@ type ShoppingElement struct {
 	LoyaltyPoints                   *LoyaltyPointsType         `csv:"loyalty_points,omitempty"`
 	GoogleProductCategory           *ProductCategoryType       `csv:"google_product_category,omitempty"`
 	ProductType                     *ProductCategoryType       `csv:"product_type,omitempty"`
-	Brand                           *string                    `csv:"brand,omitempty"`
-	GTIN                            *string                    `csv:"gtin,omitempty"`
-	MPN                             *string                    `csv:"mpn,omitempty"`
-	IdentifierExists                *ConvertibleBooleanType    `csv:"identifier_exists,omitempty"`
+	Brand                           *string                    `csv:"brand,omitempty" xml:"g:brand,omitempty" validate:"max=70" `
+	GTIN                            *string                    `csv:"gtin,omitempty" xml:"g:gtin"`
+	MPN                             *string                    `csv:"mpn,omitempty" xml:"g:mpn"`
+	IdentifierExists                *ConvertibleBooleanType    `csv:"identifier_exists,omitempty" xml:"g:identifier_exists,omitempty"`
 	Condition                       *ConditionType             `csv:"condition,omitempty"`
 	Adult                           *ConvertibleBooleanType    `csv:"adult,omitempty"`
 	Multipack                       *uint64                    `csv:"multipack,omitempty"`
@@ -78,10 +78,10 @@ type ShoppingElement struct {
 	ShippingLength                  *NumericValue              `csv:"shipping_length,omitempty"`
 	ShippingWidth                   *NumericValue              `csv:"shipping_width,omitempty"`
 	ShippingHeight                  *NumericValue              `csv:"shipping_height,omitempty"`
-	ShipsFromCountry                *string                    `csv:"ships_from_country,omitempty"`
-	TransitTimeLabel                *string                    `csv:"transit_time_label,omitempty" validate:"max=100"`
-	MinHandlingTime                 *uint64                    `csv:"min_handling_time,omitempty"`
-	MaxHandlingTime                 *uint64                    `csv:"max_handling_time,omitempty"`
+	ShipsFromCountry                *string                    `csv:"ships_from_country,omitempty" xml:"g:ships_from_country,omitempty"`
+	TransitTimeLabel                *string                    `csv:"transit_time_label,omitempty" xml:"g:transit_time_label,omitempty" validate:"max=100"`
+	MinHandlingTime                 *uint64                    `csv:"min_handling_time,omitempty" xml:"g:min_handling_time,omitempty"`
+	MaxHandlingTime                 *uint64                    `csv:"max_handling_time,omitempty" xml:"g:max_handling_time,omitempty"`
 	Tax                             *TaxType                   `csv:"tax,omitempty" json:"tax,omitempty" xml:"g:tax,omitempty"`
-	TaxCategory                     *string                    `csv:"tax_category,omitempty" json:"tax_category,omitempty" xml:"g:tax_category" validate:"max=100"`
+	TaxCategory                     *string                    `csv:"tax_category,omitempty" json:"tax_category,omitempty" xml:"g:tax_category,omitempty" validate:"max=100"`
 }

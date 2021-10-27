@@ -22,6 +22,19 @@ const (
 	G    EnergyEfficiencyClassType = "G"
 )
 
+func (eect *EnergyEfficiencyClassType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newEect := EnergyEfficiencyClassType(csv)
+	*eect = newEect
+	return nil
+}
+
+func (eect *EnergyEfficiencyClassType) MarshalCSV() (string, error) {
+	return string(*eect), nil
+}
+
 type SubscriptionCostPeriodType string
 
 const (
@@ -29,8 +42,38 @@ const (
 	Year  SubscriptionCostPeriodType = "year"
 )
 
-// GDate YYYY-MM-DDThh:mmZ
-type GDate time.Time
+func (scpt *SubscriptionCostPeriodType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newScpt := SubscriptionCostPeriodType(csv)
+	*scpt = newScpt
+	return nil
+}
+
+func (scpt *SubscriptionCostPeriodType) MarshalCSV() (string, error) {
+	return string(*scpt), nil
+}
+
+// GDate YYYY-MM-DDThh:mmZ / ISO 8601 / RFC3339
+type GDate struct {
+	time.Time
+}
+
+func (gt *GDate) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	t, err := time.Parse(time.RFC3339, csv)
+	if err != nil {
+		return err
+	}
+	gt.Time = t
+	return nil
+}
+func (gt *GDate) MarshalCSV() (string, error) {
+	return gt.Format(time.RFC3339), nil
+}
 
 type AdsDestinationType string
 
@@ -43,6 +86,19 @@ const (
 	FreeLocalListings   AdsDestinationType = "Free_local_listings"
 )
 
+func (adt *AdsDestinationType) MarshalCSV() (string, error) {
+	return string(*adt), nil
+}
+
+func (adt *AdsDestinationType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newAdt := AdsDestinationType(csv)
+	*adt = newAdt
+	return nil
+}
+
 type SizeType string
 
 const (
@@ -54,6 +110,18 @@ const (
 	Plus      SizeType = "plus"
 )
 
+func (st *SizeType) MarshalCSV() (string, error) {
+	return string(*st), nil
+}
+func (st *SizeType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newSt := SizeType(csv)
+	*st = newSt
+	return nil
+}
+
 type GenderType string
 
 const (
@@ -61,6 +129,19 @@ const (
 	Female GenderType = "female"
 	Unisex GenderType = "unisex"
 )
+
+func (gt *GenderType) MarshalCSV() (string, error) {
+	return string(*gt), nil
+}
+
+func (gt *GenderType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newGt := GenderType(csv)
+	*gt = newGt
+	return nil
+}
 
 type AgeGroupType string
 
@@ -71,6 +152,18 @@ const (
 	Kids    AgeGroupType = "kids"
 	Adult   AgeGroupType = "adult"
 )
+
+func (agt *AgeGroupType) MarshalCSV() (string, error) {
+	return string(*agt), nil
+}
+func (agt *AgeGroupType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	newAgt := AgeGroupType(csv)
+	*agt = newAgt
+	return nil
+}
 
 type ConvertibleBooleanType bool
 
@@ -97,6 +190,19 @@ const (
 	Refurbished ConditionType = "refurbished"
 	Used        ConditionType = "used"
 )
+
+func (ct *ConditionType) MarshalCSV() (string, error) {
+	return string(*ct), nil
+}
+func (ct *ConditionType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+
+	newCt := ConditionType(csv)
+	*ct = newCt
+	return nil
+}
 
 type AvailabilityType string
 

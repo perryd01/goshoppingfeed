@@ -3,12 +3,53 @@ package google
 import (
 	"fmt"
 	"github.com/gocarina/gocsv"
+	"github.com/shopspring/decimal"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
-type MultipleGUrl []*GUrl
+type MultipleGUrl struct {
+	Urls []*GUrl
+}
+
+func (mg *MultipleGUrl) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	split := strings.Split(csv, ",")
+	for _, s := range split {
+		var u *GUrl
+		err := u.UnmarshalCSV(s)
+		if err != nil {
+			return err
+		}
+		mg.Urls = append(mg.Urls, u)
+	}
+	return nil
+
+}
+func (mg *MultipleGUrl) MarshalCSV() (string, error) {
+	if len(mg.Urls) == 0 {
+		return "", nil
+	}
+
+	var s string
+	for i, gUrl := range mg.Urls {
+		csv, err := gUrl.MarshalCSV()
+		if err != nil {
+			return "", err
+		}
+		s += csv
+
+		if i < len(mg.Urls)-1 {
+			s += ","
+		}
+	}
+	return s, nil
+}
 
 type GUrl struct {
 	*url.URL
@@ -18,9 +59,9 @@ func (gurl *GUrl) UnmarshalCSV(csv string) error {
 	if csv == "" {
 		return nil
 	}
-	url, err := url.Parse(csv)
+	newUrl, err := url.Parse(csv)
 	if err == nil {
-		gurl.URL = url
+		gurl.URL = newUrl
 	}
 	return err
 }
@@ -33,10 +74,74 @@ type ProductCategoryType struct {
 	Categories []*string
 }
 
+func (cat *ProductCategoryType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	r, _ := regexp.Compile("^[0-9]+$")
+
+	isNumeric := r.MatchString(csv)
+	if isNumeric {
+		parseUint, err := strconv.ParseUint(csv, 10, 64)
+		if err != nil {
+			return err
+		}
+		cat.ID = &parseUint
+	} else {
+		split := strings.Split(csv, ">")
+		for _, c := range split {
+			trim := strings.TrimSpace(c)
+			cat.Categories = append(cat.Categories, &trim)
+		}
+	}
+	return nil
+}
+func (cat *ProductCategoryType) MarshalCSV() (string, error) {
+	var s string
+	if cat.ID != nil {
+		s = strconv.FormatUint(*cat.ID, 10)
+		return s, nil
+	}
+	if len(cat.Categories) != 0 {
+		for i, v := range cat.Categories {
+			s += *v
+			if i < len(cat.Categories)-1 {
+				s += " > "
+			}
+		}
+		return s, nil
+	}
+	return "", nil
+}
+
 type LoyaltyPointsType struct {
 	Name        *string
-	PointsValue *uint64
-	Ratio       *float32
+	PointsValue *uint64  // TODO decimal
+	Ratio       *float32 // TODO decimal
+}
+
+func (lpt *LoyaltyPointsType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	split := strings.Split(csv, ":")
+	*lpt.Name = split[0]
+	points, err := strconv.ParseUint(split[1], 10, 64)
+	if err != nil {
+		return err
+	}
+	*lpt.PointsValue = points
+	ratio, err := strconv.ParseFloat(split[2], 32)
+	if err != nil {
+		return err
+	}
+	*lpt.Ratio = float32(ratio)
+	return nil
+}
+func (lpt *LoyaltyPointsType) MarshalCSV() (string, error) {
+	points := strconv.FormatUint(*lpt.PointsValue, 10)
+	ratio := fmt.Sprintf("%0.2f", *lpt.Ratio)
+	return fmt.Sprintf("%s:%s:%s", *lpt.Name, points, ratio), nil
 }
 
 type SubscriptionCostType struct {
@@ -48,6 +153,30 @@ type SubscriptionCostType struct {
 type InstallmentType struct {
 	Months *uint64
 	Amount *NumericValue
+}
+
+func (it *InstallmentType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	split := strings.Split(csv, ",")
+	var nv NumericValue
+	err := nv.UnmarshalCSV(split[1])
+	if err != nil {
+		return err
+	}
+	months, err := strconv.ParseUint(split[0], 10, 64)
+	if err != nil {
+		return err
+	}
+	*it.Months = months
+	*it.Amount = nv
+	return nil
+}
+func (it *InstallmentType) MarshalCSV() (string, error) {
+	months := strconv.FormatUint(*it.Months, 10)
+	amount, _ := it.Amount.MarshalCSV()
+	return fmt.Sprintf("%s,%s", months, amount), nil
 }
 
 type TaxType struct {
@@ -77,7 +206,6 @@ func (tt *TaxType) UnmarshalCSV(csv string) error {
 	tt.ShippingTax = boolean
 	return nil
 }
-
 func (tt *TaxType) MarshalCSV() (string, error) {
 	var country string = *tt.Country
 	var area string = *tt.Area
@@ -101,6 +229,7 @@ type ShippingType struct {
 	MaxTransitTime    *string       `xml:"g:max_transit_time,omitempty"`
 }
 
+// TODO
 type MultipleProductDetailType []*ProductDetailType
 
 type ProductDetailType struct {
@@ -109,39 +238,64 @@ type ProductDetailType struct {
 	AttributeValue *string
 }
 
+func (pdt *ProductDetailType) UnmarshalCSV(csv string) error {
+	if csv == "" {
+		return nil
+	}
+	split := strings.Split(csv, ":")
+	*pdt.Section = split[0]
+	*pdt.AttributeName = split[1]
+	*pdt.AttributeValue = split[2]
+	return nil
+}
+func (pdt *ProductDetailType) MarshalCSV() (string, error) {
+	return fmt.Sprintf("%s:%s:%s", *pdt.Section, *pdt.AttributeName, *pdt.AttributeValue), nil
+}
+
 type NumericValue struct {
-	Int       *uint64
-	Fraction  *uint64
-	Dimension *string
+	Value     decimal.NullDecimal
+	Dimension string
+	HasSpace  bool
+}
+
+func (nv *NumericValue) MarshalCSV() (string, error) {
+	text, err := nv.Value.MarshalText()
+	if err != nil {
+		return "", err
+	}
+	if nv.HasSpace {
+		return fmt.Sprintf("%s %s", text, nv.Dimension), nil
+	} else {
+		return fmt.Sprintf("%s%s", text, nv.Dimension), nil
+	}
 }
 
 func (nv *NumericValue) UnmarshalCSV(csv string) error {
 	if csv == "" {
 		return nil
 	}
-	firstSlice := strings.Split(csv, " ")
-	hasFraction := strings.Contains(csv, ".")
-	numPart := firstSlice[0]
-	nv.Dimension = &firstSlice[1]
-
-	if hasFraction {
-		secondSlice := strings.Split(numPart, ".")
-		integer, err := strconv.ParseUint(secondSlice[0], 10, 64)
-		if err != nil {
-			return err
-		}
-		*nv.Int = integer
-		fraction, err := strconv.ParseUint(secondSlice[1], 10, 64)
-		if err != nil {
-			return err
-		}
-		*nv.Fraction = fraction
+	nv.HasSpace = strings.Contains(csv, " ")
+	var fSlice []string
+	var numPart string
+	var dimension string
+	if nv.HasSpace {
+		fSlice = strings.Split(csv, " ")
+		numPart = fSlice[0]
+		dimension = fSlice[1]
 	} else {
-		integer, err := strconv.ParseUint(firstSlice[0], 10, 64)
-		if err != nil {
-			return err
+		whereToSplit := 0
+		for i := 0; i < len(csv); i++ {
+			if unicode.IsDigit(rune(csv[i])) {
+				whereToSplit = i
+			}
 		}
-		*nv.Int = integer
+		numPart = csv[:whereToSplit]
+		dimension = csv[whereToSplit : len(csv)-1]
 	}
+
+	value, _ := decimal.NewFromString(numPart)
+	nv.Value = decimal.NewNullDecimal(value)
+	nv.Dimension = dimension
+
 	return nil
 }
